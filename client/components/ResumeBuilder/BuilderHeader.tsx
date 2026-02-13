@@ -9,9 +9,16 @@ import { ArrowLeft, FileText, Pencil, Save } from "lucide-react";
 interface BuilderHeaderProps {
   name: string;
   onNameChange: (value: string) => void;
+  onSave: () => void;
+  saving?: boolean;
 }
 
-export function BuilderHeader({ name, onNameChange }: BuilderHeaderProps) {
+export function BuilderHeader({
+  name,
+  onNameChange,
+  onSave,
+  saving,
+}: BuilderHeaderProps) {
   const [isEditingName, setIsEditingName] = useState(false);
 
   return (
@@ -48,9 +55,9 @@ export function BuilderHeader({ name, onNameChange }: BuilderHeaderProps) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm">
+          <Button size="sm" onClick={onSave} disabled={saving}>
             <Save className="h-4 w-4 mr-2" />
-            Save
+            {saving ? "Saving..." : "Save"}
           </Button>
           <Button
             size="sm"
@@ -59,7 +66,7 @@ export function BuilderHeader({ name, onNameChange }: BuilderHeaderProps) {
                 .trim()
                 .replace(/[/\\?%*:|"<>]/g, "-")
                 .replace(/\s+/g, "_");
-              // TODO: generate PDF / export
+              // TODO: generate PDF / export using `safe`
             }}
           >
             <FileText className="h-4 w-4 mr-2" />

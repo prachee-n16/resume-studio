@@ -388,6 +388,12 @@ export function useResumeBuilder(initial: Resume = defaultResume) {
     [resume.projects, expandedProject],
   );
 
+  const loadResume = useCallback((loaded: Resume) => {
+    setResume(loaded);
+    setExpandedExperience(loaded.experiences[0]?.id ?? null);
+    setExpandedProject(loaded.projects[0]?.id ?? null);
+  }, []);
+
   return {
     resume,
     updateField,
@@ -398,6 +404,7 @@ export function useResumeBuilder(initial: Resume = defaultResume) {
     selectProject,
     selectedExperience,
     selectedProject,
+    loadResume,
     experience: {
       list: resume.experiences,
       add: addExperience,

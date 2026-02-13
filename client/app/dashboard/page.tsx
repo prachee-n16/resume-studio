@@ -1,7 +1,8 @@
 "use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { DitherBackground } from "@/components/DitheringBackground";
-import { useState } from "react";
-import { Resume } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,12 +19,49 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
+type ResumeSummary = {
+  id: string;
+  name: string;
+  tags: string[];
+  lastEdited: string;
+};
+
 interface DashboardProps {}
 
 export default function DashboardPage({}: DashboardProps) {
-  const [resumes, setResumes] = useState<Resume[]>([]);
+  const router = useRouter();
+  const [resumes, setResumes] = useState<ResumeSummary[]>([]);
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const handleNewResume = () => {
+    router.push("/resume");
+  };
+
+  const handleOpenResume = (id: string) => {
+    router.push(`/resume?id=${id}`);
+  };
+
+  useEffect(() => {
+    async function loadResumes() {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/resumes");
+        if (!res.ok) return;
+        const data = await res.json();
+        setResumes(
+          data.map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            tags: r.tags ?? [],
+            lastEdited: r.lastEdited,
+          })),
+        );
+      } catch (e) {
+        console.error("Failed to load resumes", e);
+      }
+    }
+    loadResumes();
+  }, []);
 
   const filteredResumes = resumes.filter(
     (resume) =>
@@ -53,7 +91,8 @@ export default function DashboardPage({}: DashboardProps) {
         {filteredResumes.map((resume) => (
           <div
             key={resume.id}
-            className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
+            className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors cursor-pointer"
+            onClick={() => handleOpenResume(resume.id)}
           >
             <div className="flex items-start justify-between mb-2">
               <div className="min-w-0">
@@ -118,10 +157,20 @@ export default function DashboardPage({}: DashboardProps) {
             </div>
 
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleOpenResume(resume.id)}
+                aria-label="View resume"
+              >
                 <Eye className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleOpenResume(resume.id)}
+                aria-label="Edit resume"
+              >
                 <Pencil className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="sm">
@@ -162,7 +211,7 @@ export default function DashboardPage({}: DashboardProps) {
                 {resumes.length} resume{resumes.length !== 1 ? "s" : ""} saved
               </p>
             </div>
-            <Button>
+            <Button onClick={handleNewResume}>
               <Plus className="h-4 w-4 mr-2" />
               New Resume
             </Button>
